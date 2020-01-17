@@ -1,13 +1,19 @@
 ### Notes from development
-The proposed solution for this challenge will focus on the below:
-- Multiple instance setup. 
-    To accomplish this, I will focus on building the service to allow for multiple instances running at the same time.
-- Properly structure the code 
+My implementation for this challenge will focus on:
+- Allowing multiple instances running simultaneously.
+- Structure the code to allow for future development.
+
+Before starting to implement any code, I would like to note down my initial assumptions.
+- As required by the challenge, invoices have to be paid on the 1st of the month. As the company developing this service is poised to scale, Scalability is key here to make sure all invoices, despite the volume is processed and paid on the 1st of the month.
+- The requirement as of writing the challenge is not very concrete, I will therefore assume the requirements is likely to change and be specified later on. With this in mind, the implementation needs to be loosely coupled and allow for adding functionality.
+
 
 ### Time report
 17-01-2020
     18:00-18:20 Familiarizing myself with the project.
     18:20-18:30 Deciding on the direction and architecture I want to implement
+    20:20-20:40 Same
+    20:40- 
      
 
 ## Antaeus
