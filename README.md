@@ -1,3 +1,15 @@
+### Notes from development
+The proposed solution for this challenge will focus on the below:
+- Multiple instance setup. 
+    To accomplish this, I will focus on building the service to allow for multiple instances running at the same time.
+- Properly structure the code 
+
+### Time report
+17-01-2020
+    18:00-18:20 Familiarizing myself with the project.
+    18:20-18:30 Deciding on the direction and architecture I want to implement
+     
+
 ## Antaeus
 
 Antaeus (/ænˈtiːəs/), in Greek mythology, a giant of Libya, the son of the sea god Poseidon and the Earth goddess Gaia. He compelled all strangers who were passing through the country to wrestle with him. Whenever Antaeus touched the Earth (his mother), his strength was renewed, so that even if thrown to the ground, he was invincible. Heracles, in combat with him, discovered the source of his strength and, lifting him up from Earth, crushed him to death.
