@@ -2,24 +2,36 @@ package io.pleo.antaeus.core.services
 
 import io.pleo.antaeus.core.exceptions.InvoiceNotFoundException
 import io.pleo.antaeus.core.external.PaymentProvider
+import io.pleo.antaeus.models.Invoice
 import io.pleo.antaeus.models.InvoiceStatus
+import mu.KotlinLogging
+
+private val logger = KotlinLogging.logger {}
 
 class BillingService(
     private val paymentProvider: PaymentProvider,
     private val invoiceService: InvoiceService
 ) {
     fun runBilling() {
+        logger.info { "Starting processing invoices" }
         val pendingInvoices = invoiceService.fetchAllPending()
 
         pendingInvoices?.forEach {
-            try {
-                val invoice = invoiceService.fetch(it.id)
-                if (invoice.status == InvoiceStatus.PENDING) {
-                    paymentProvider.charge(it)
-                }
-            } catch (ex: InvoiceNotFoundException) {
+            processInvoice(it)
+        }
+    }
 
+    private fun processInvoice(invoice: Invoice) {
+        logger.info { "Processing invoice id: ${invoice.id}" }
+
+        try {
+            val updatedInvoice = invoiceService.fetch(invoice.id)
+
+            if (updatedInvoice.status == InvoiceStatus.PENDING) {
+                paymentProvider.charge(updatedInvoice)
             }
+        } catch (ex: InvoiceNotFoundException) {
+            logger.info { "Invoice id: ${invoice.id} not found, manuel intervention needed" }
         }
     }
 }
