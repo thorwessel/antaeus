@@ -1,5 +1,6 @@
 package io.pleo.antaeus.core.services
 
+import io.mockk.Called
 import io.mockk.Runs
 import io.mockk.just
 import io.mockk.every
@@ -7,6 +8,7 @@ import io.mockk.mockk
 import io.mockk.runs
 import io.mockk.verify
 import io.mockk.verifyOrder
+import io.pleo.antaeus.core.exceptions.InvoiceNotFoundException
 import io.pleo.antaeus.core.external.PaymentProvider
 import io.pleo.antaeus.models.Currency
 import io.pleo.antaeus.models.Invoice
@@ -40,7 +42,7 @@ class BillingServiceTest {
     fun `runBilling will call payment provider charge`() {
         every { paymentProvider.charge(any()) } returns true
         every { invoiceService.fetchAllPending() } returns listOf(pendingInvoice)
-
+        every { invoiceService.fetch(pendingInvoice.id) } returns pendingInvoice
 
         billingService.runBilling()
 
@@ -59,5 +61,22 @@ class BillingServiceTest {
             invoiceService.fetch(pendingInvoice.id)
             paymentProvider.charge(pendingInvoice)
         }
+
+        verifyOrder {
+            invoiceService.fetch(pendingInvoice.id)
+            paymentProvider.charge(pendingInvoice)
+        }
+    }
+
+    @Test
+    fun `Will not charge invoice when invoiceService throws`() {
+        every { paymentProvider.charge(any()) } returns true
+        every { invoiceService.fetchAllPending() } returns listOf(pendingInvoice)
+        every { invoiceService.fetch(pendingInvoice.id) } throws InvoiceNotFoundException(pendingInvoice.id)
+
+        billingService.runBilling()
+
+        verify(exactly = 0) { paymentProvider.charge(pendingInvoice) }
+
     }
 }
