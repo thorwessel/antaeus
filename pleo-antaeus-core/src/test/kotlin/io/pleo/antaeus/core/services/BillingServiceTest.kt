@@ -6,6 +6,7 @@ import io.mockk.every
 import io.mockk.mockk
 import io.mockk.runs
 import io.mockk.verify
+import io.mockk.verifyOrder
 import io.pleo.antaeus.core.external.PaymentProvider
 import io.pleo.antaeus.models.Currency
 import io.pleo.antaeus.models.Invoice
@@ -44,5 +45,19 @@ class BillingServiceTest {
         billingService.runBilling()
 
         verify { paymentProvider.charge(any()) }
+    }
+
+    @Test
+    fun `runBilling will check status of invoice before attempting to charge`() {
+        every { paymentProvider.charge(any()) } returns true
+        every { invoiceService.fetchAllPending() } returns listOf(pendingInvoice)
+        every { invoiceService.fetch(pendingInvoice.id) } returns pendingInvoice
+
+        billingService.runBilling()
+
+        verifyOrder {
+            invoiceService.fetch(pendingInvoice.id)
+            paymentProvider.charge(pendingInvoice)
+        }
     }
 }

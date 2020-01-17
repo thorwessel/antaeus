@@ -11,7 +11,10 @@ class BillingService(
         val pendingInvoices = invoiceService.fetchAllPending()
 
         pendingInvoices?.forEach {
-            paymentProvider.charge(it)
+            val invoice = invoiceService.fetch(it.id)
+            if (invoice.status == InvoiceStatus.PENDING) {
+                paymentProvider.charge(it)
+            }
         }
     }
 }
