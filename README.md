@@ -2,6 +2,7 @@
 My implementation for this challenge will focus on:
 - Allowing multiple instances running simultaneously.
 - Structure the code to allow for future development.
+- Using a TDD approach
 
 Before starting to implement any code, I would like to note down my initial assumptions.
 - As required by the challenge, invoices have to be paid on the 1st of the month. As the company developing this service is poised to scale, Scalability is key here to make sure all invoices, despite the volume is processed and paid on the 1st of the month.
