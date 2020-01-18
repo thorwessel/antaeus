@@ -5,9 +5,7 @@ import io.pleo.antaeus.models.Currency
 import io.pleo.antaeus.models.Invoice
 import io.pleo.antaeus.models.InvoiceStatus
 import io.pleo.antaeus.models.Money
-import org.joda.time.DateTime
 import java.math.BigDecimal
-import java.time.Instant
 import java.time.LocalDateTime
 import kotlin.random.Random
 

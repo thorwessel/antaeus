@@ -10,7 +10,6 @@ import io.pleo.antaeus.models.InvoiceStatus
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import mu.KotlinLogging
-import org.joda.time.DateTime
 import java.time.LocalDateTime
 
 private val logger = KotlinLogging.logger {}
