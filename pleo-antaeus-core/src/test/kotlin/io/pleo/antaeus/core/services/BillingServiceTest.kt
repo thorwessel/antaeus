@@ -76,6 +76,18 @@ class BillingServiceTest {
         currency = Currency.DKK
     )
 
+    private val futurePendingInvoice = Invoice(
+        id = 2,
+        customerId = 1,
+        amount = Money(
+            value = BigDecimal(999),
+            currency = Currency.EUR
+        ),
+        status = InvoiceStatus.PENDING,
+        dueDate = DateTime.now().plusMonths(5).withDayOfMonth(1),
+        scheduleDate = DateTime.now().plusMonths(5).withDayOfMonth(1)
+    )
+
     private val paymentProvider = mockk<PaymentProvider>() {
         every { charge(any()) } returns true
     }
@@ -193,5 +205,23 @@ class BillingServiceTest {
         billingService.runBilling()
 
         verify { invoiceService.markInvoiceFailed(pendingInvoice.id) }
+    }
+
+    @Test
+    fun `Will not mark invoice as processing with schedule date in the future`() {
+        every { invoiceService.fetchAllWithStatus(InvoiceStatus.PENDING) } returns listOf(futurePendingInvoice)
+
+        billingService.runBilling()
+
+        verify(exactly = 0) { invoiceService.markInvoiceProcessing(futurePendingInvoice.id) }
+    }
+
+    @Test
+    fun `Will not attempt charging invoice with schedule date in the future`() {
+        every { invoiceService.fetchAllWithStatus(InvoiceStatus.PENDING) } returns listOf(futurePendingInvoice)
+
+        billingService.runBilling()
+
+        verify(exactly = 0) { paymentProvider.charge(futurePendingInvoice) }
     }
 }
