@@ -84,11 +84,6 @@ class BillingServiceTest {
             invoiceService.fetch(pendingInvoice.id)
             paymentProvider.charge(pendingInvoice)
         }
-
-        verifyOrder {
-            invoiceService.fetch(pendingInvoice.id)
-            paymentProvider.charge(pendingInvoice)
-        }
     }
 
     @Test
@@ -109,9 +104,17 @@ class BillingServiceTest {
 
     @Test
     fun `runBilling will change status of invoice to PAID when charge is successful`() {
-
         billingService.runBilling()
 
         verify { invoiceService.markInvoicePaid(pendingInvoice.id) }
+    }
+
+    @Test
+    fun `runBilling will not change status of invoice to PAID when charge failed`() {
+        every { paymentProvider.charge(any()) } returns false
+
+        billingService.runBilling()
+
+        verify(exactly = 0) { invoiceService.markInvoicePaid(pendingInvoice.id) }
     }
 }
