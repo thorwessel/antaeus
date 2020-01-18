@@ -15,6 +15,7 @@ import io.pleo.antaeus.models.Money
 import org.joda.time.DateTime
 import org.junit.jupiter.api.Test
 import java.math.BigDecimal
+import java.time.LocalDateTime
 
 class BillingServiceTest {
 
@@ -26,8 +27,8 @@ class BillingServiceTest {
             currency = Currency.EUR
         ),
         status = InvoiceStatus.PENDING,
-        dueDate = DateTime.now(),
-        scheduleDate = DateTime.now()
+        dueDate = LocalDateTime.now(),
+        scheduleDate = LocalDateTime.now()
     )
 
     private val processingInvoice = Invoice(
@@ -38,8 +39,8 @@ class BillingServiceTest {
             currency = Currency.EUR
         ),
         status = InvoiceStatus.PROCESSING,
-        dueDate = DateTime.now(),
-        scheduleDate = DateTime.now()
+        dueDate = LocalDateTime.now(),
+        scheduleDate = LocalDateTime.now()
     )
 
     private val paidInvoice = Invoice(
@@ -50,8 +51,8 @@ class BillingServiceTest {
             currency = Currency.EUR
         ),
         status = InvoiceStatus.PAID,
-        dueDate = DateTime.now(),
-        scheduleDate = DateTime.now()
+        dueDate = LocalDateTime.now(),
+        scheduleDate = LocalDateTime.now()
     )
 
     private val failedInvoice = Invoice(
@@ -62,8 +63,8 @@ class BillingServiceTest {
             currency = Currency.EUR
         ),
         status = InvoiceStatus.FAILED,
-        dueDate = DateTime.now(),
-        scheduleDate = DateTime.now()
+        dueDate = LocalDateTime.now(),
+        scheduleDate = LocalDateTime.now()
     )
 
     private val customer = Customer(
@@ -84,8 +85,8 @@ class BillingServiceTest {
             currency = Currency.EUR
         ),
         status = InvoiceStatus.PENDING,
-        dueDate = DateTime.now().plusMonths(5).withDayOfMonth(1),
-        scheduleDate = DateTime.now().plusMonths(5).withDayOfMonth(1)
+        dueDate = LocalDateTime.now().plusDays(5),
+        scheduleDate = LocalDateTime.now().plusDays(5)
     )
 
     private val paymentProvider = mockk<PaymentProvider>() {
