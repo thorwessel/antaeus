@@ -8,6 +8,7 @@ import io.pleo.antaeus.models.Customer
 import io.pleo.antaeus.models.Invoice
 import io.pleo.antaeus.models.InvoiceStatus
 import mu.KotlinLogging
+import org.joda.time.DateTime
 
 private val logger = KotlinLogging.logger {}
 
@@ -18,7 +19,11 @@ class BillingService(
 ) {
     fun runBilling() {
         logger.info { "Starting processing invoices" }
-        val pendingInvoices = invoiceService.fetchAllWithStatus(InvoiceStatus.PENDING)
+        val pendingInvoices = invoiceService
+            .fetchAllWithStatus(InvoiceStatus.PENDING)
+            ?.filter {
+                it.scheduleDate.toLocalDate() <= DateTime.now().toLocalDate()
+            }
 
         pendingInvoices?.forEach {
             processInvoice(it)
