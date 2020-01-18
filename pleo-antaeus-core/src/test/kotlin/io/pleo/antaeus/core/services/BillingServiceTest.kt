@@ -38,11 +38,22 @@ class BillingServiceTest {
         status = InvoiceStatus.PENDING
     )
 
+    private val processingInvoice = Invoice(
+        id = 1,
+        customerId = 1,
+        amount = Money(
+            value = BigDecimal(999),
+            currency = Currency.EUR
+        ),
+        status = InvoiceStatus.PROCESSING
+    )
+
     @Test
     fun `runBilling will call payment provider charge`() {
         every { paymentProvider.charge(any()) } returns true
         every { invoiceService.fetchAllPending() } returns listOf(pendingInvoice)
         every { invoiceService.fetch(pendingInvoice.id) } returns pendingInvoice
+        every { invoiceService.markInvoiceProcessing(pendingInvoice.id) } returns processingInvoice
 
         billingService.runBilling()
 
@@ -54,6 +65,7 @@ class BillingServiceTest {
         every { paymentProvider.charge(any()) } returns true
         every { invoiceService.fetchAllPending() } returns listOf(pendingInvoice)
         every { invoiceService.fetch(pendingInvoice.id) } returns pendingInvoice
+        every { invoiceService.markInvoiceProcessing(pendingInvoice.id) } returns processingInvoice
 
         billingService.runBilling()
 
@@ -73,10 +85,22 @@ class BillingServiceTest {
         every { paymentProvider.charge(any()) } returns true
         every { invoiceService.fetchAllPending() } returns listOf(pendingInvoice)
         every { invoiceService.fetch(pendingInvoice.id) } throws InvoiceNotFoundException(pendingInvoice.id)
+        every { invoiceService.markInvoiceProcessing(pendingInvoice.id) } returns processingInvoice
 
         billingService.runBilling()
 
         verify(exactly = 0) { paymentProvider.charge(pendingInvoice) }
+    }
 
+    @Test
+    fun `runBilling will change status of invoice to PROCESSING when handling`() {
+        every { paymentProvider.charge(any()) } returns true
+        every { invoiceService.fetchAllPending() } returns listOf(pendingInvoice)
+        every { invoiceService.fetch(pendingInvoice.id) } returns pendingInvoice
+        every { invoiceService.markInvoiceProcessing(pendingInvoice.id) } returns processingInvoice
+
+        billingService.runBilling()
+
+        verify { invoiceService.markInvoiceProcessing(pendingInvoice.id) }
     }
 }

@@ -28,6 +28,7 @@ class BillingService(
             val updatedInvoice = invoiceService.fetch(invoice.id)
 
             if (updatedInvoice.status == InvoiceStatus.PENDING) {
+                invoiceService.markInvoiceProcessing(updatedInvoice.id)
                 paymentProvider.charge(updatedInvoice)
             }
         } catch (ex: InvoiceNotFoundException) {
