@@ -29,7 +29,11 @@ class BillingService(
 
             if (updatedInvoice.status == InvoiceStatus.PENDING) {
                 invoiceService.markInvoiceProcessing(updatedInvoice.id)
-                paymentProvider.charge(updatedInvoice)
+                val charge = paymentProvider.charge(updatedInvoice)
+
+                if (charge == true) {
+                    invoiceService.markInvoicePaid(updatedInvoice.id)
+                }
             }
         } catch (ex: InvoiceNotFoundException) {
             logger.info { "Invoice id: ${invoice.id} not found, manuel intervention needed" }

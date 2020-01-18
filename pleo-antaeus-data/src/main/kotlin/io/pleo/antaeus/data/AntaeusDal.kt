@@ -73,6 +73,16 @@ class AntaeusDal(private val db: Database) {
         return fetchInvoice(invoiceId)
     }
 
+    fun markInvoicePaid(invoiceId: Int): Invoice? {
+        transaction(db) {
+            InvoiceTable
+                .update({ InvoiceTable.id.eq(invoiceId) }) {
+                    it[this.status] = InvoiceStatus.PAID.toString()
+                }
+        }
+        return fetchInvoice(invoiceId)
+    }
+
     fun fetchCustomer(id: Int): Customer? {
         return transaction(db) {
             CustomerTable
