@@ -147,6 +147,15 @@ class BillingServiceTest {
         billingService.runBilling()
 
         verify { invoiceService.rescheduleAndMarkPending(pendingInvoice.id) }
+    }
 
+    @Test
+    fun `Will not mark invoice as PAID if network exception is thrown`() {
+        every { paymentProvider.charge(any()) } throws NetworkException()
+        every { invoiceService.rescheduleAndMarkPending(any()) } returns pendingInvoice
+
+        billingService.runBilling()
+
+        verify(exactly = 0) { invoiceService.markInvoicePaid(pendingInvoice.id) }
     }
 }

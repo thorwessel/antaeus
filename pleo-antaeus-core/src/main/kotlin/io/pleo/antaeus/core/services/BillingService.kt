@@ -17,6 +17,10 @@ class BillingService(
         logger.info { "Starting processing invoices" }
         val pendingInvoices = invoiceService.fetchAllPending()
 
+        if (pendingInvoices == null ) {
+            logger.info { "No pending invoices found" }
+        }
+
         pendingInvoices?.forEach {
             processInvoice(it)
         }
