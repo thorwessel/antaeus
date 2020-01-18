@@ -87,6 +87,24 @@ class BillingServiceTest {
     }
 
     @Test
+    fun `runBilling will not charge invoice when status is PROCESSING`() {
+        every { invoiceService.fetch(any()) } returns processingInvoice
+
+        billingService.runBilling()
+
+        verify(exactly = 0) { paymentProvider.charge(any()) }
+    }
+
+    @Test
+    fun `runBilling will not charge invoice when status is PAID`() {
+        every { invoiceService.fetch(any()) } returns paidInvoice
+
+        billingService.runBilling()
+
+        verify(exactly = 0) { paymentProvider.charge(any()) }
+    }
+
+    @Test
     fun `Will not charge invoice when invoiceService throws`() {
         every { invoiceService.fetch(pendingInvoice.id) } throws InvoiceNotFoundException(pendingInvoice.id)
 
