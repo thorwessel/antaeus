@@ -5,6 +5,8 @@ import io.pleo.antaeus.models.Currency
 import io.pleo.antaeus.models.Invoice
 import io.pleo.antaeus.models.InvoiceStatus
 import io.pleo.antaeus.models.Money
+import org.joda.time.DateTime
+import org.joda.time.LocalDateTime
 import java.math.BigDecimal
 import kotlin.random.Random
 
@@ -24,7 +26,8 @@ internal fun setupInitialData(dal: AntaeusDal) {
                     currency = customer.currency
                 ),
                 customer = customer,
-                status = if (it == 1) InvoiceStatus.PENDING else InvoiceStatus.PAID
+                status = if (it == 1) InvoiceStatus.PENDING else InvoiceStatus.PAID,
+                dueDate = DateTime().plusMonths(1).withDayOfMonth(1)
             )
         }
     }
