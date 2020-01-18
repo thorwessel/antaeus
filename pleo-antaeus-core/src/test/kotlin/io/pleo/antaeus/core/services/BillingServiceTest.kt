@@ -55,6 +55,18 @@ class BillingServiceTest {
         scheduleDate = DateTime.now()
     )
 
+    private val failedInvoice = Invoice(
+        id = 1,
+        customerId = 1,
+        amount = Money(
+            value = BigDecimal(999),
+            currency = Currency.EUR
+        ),
+        status = InvoiceStatus.FAILED,
+        dueDate = DateTime.now(),
+        scheduleDate = DateTime.now()
+    )
+
     private val customer = Customer(
         id = 1,
         currency = Currency.EUR
@@ -74,6 +86,7 @@ class BillingServiceTest {
         every { fetch(pendingInvoice.id) } returns pendingInvoice
         every { markInvoiceProcessing(pendingInvoice.id) } returns processingInvoice
         every { markInvoicePaid(processingInvoice.id) } returns paidInvoice
+        every { markInvoiceFailed(processingInvoice.id) } returns failedInvoice
     }
 
     private val customerService = mockk<CustomerService>() {
@@ -180,6 +193,6 @@ class BillingServiceTest {
 
         billingService.runBilling()
 
-        verify(exactly = 0) { invoiceService.markInvoiceFailed(pendingInvoice.id) }
+        verify { invoiceService.markInvoiceFailed(pendingInvoice.id) }
     }
 }
