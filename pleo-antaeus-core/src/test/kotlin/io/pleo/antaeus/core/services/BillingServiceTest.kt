@@ -1,22 +1,18 @@
 package io.pleo.antaeus.core.services
 
-import io.mockk.Called
-import io.mockk.Runs
-import io.mockk.just
 import io.mockk.every
 import io.mockk.mockk
-import io.mockk.runs
 import io.mockk.verify
 import io.mockk.verifyOrder
 import io.pleo.antaeus.core.exceptions.InvoiceNotFoundException
+import io.pleo.antaeus.core.exceptions.NetworkException
 import io.pleo.antaeus.core.external.PaymentProvider
 import io.pleo.antaeus.models.Currency
 import io.pleo.antaeus.models.Invoice
 import io.pleo.antaeus.models.InvoiceStatus
 import io.pleo.antaeus.models.Money
-import org.junit.jupiter.api.BeforeAll
+import org.joda.time.DateTime
 import org.junit.jupiter.api.Test
-import org.junit.jupiter.api.assertThrows
 import java.math.BigDecimal
 
 class BillingServiceTest {
@@ -28,7 +24,9 @@ class BillingServiceTest {
             value = BigDecimal(999),
             currency = Currency.EUR
         ),
-        status = InvoiceStatus.PENDING
+        status = InvoiceStatus.PENDING,
+        dueDate = DateTime.now(),
+        scheduleDate = DateTime.now()
     )
 
     private val processingInvoice = Invoice(
@@ -38,7 +36,9 @@ class BillingServiceTest {
             value = BigDecimal(999),
             currency = Currency.EUR
         ),
-        status = InvoiceStatus.PROCESSING
+        status = InvoiceStatus.PROCESSING,
+        dueDate = DateTime.now(),
+        scheduleDate = DateTime.now()
     )
 
     private val paidInvoice = Invoice(
@@ -48,7 +48,9 @@ class BillingServiceTest {
             value = BigDecimal(999),
             currency = Currency.EUR
         ),
-        status = InvoiceStatus.PAID
+        status = InvoiceStatus.PAID,
+        dueDate = DateTime.now(),
+        scheduleDate = DateTime.now()
     )
 
     private val paymentProvider = mockk<PaymentProvider>() {
@@ -70,14 +72,14 @@ class BillingServiceTest {
 
 
     @Test
-    fun `runBilling will call payment provider charge`() {
+    fun `Will call payment provider charge`() {
         billingService.runBilling()
 
         verify { paymentProvider.charge(any()) }
     }
 
     @Test
-    fun `runBilling will check status of invoice before attempting to charge`() {
+    fun `Will check status of invoice before attempting to charge`() {
         billingService.runBilling()
 
         verifyOrder {
@@ -87,7 +89,7 @@ class BillingServiceTest {
     }
 
     @Test
-    fun `runBilling will not charge invoice when status is PROCESSING`() {
+    fun `Will not charge invoice when status is PROCESSING`() {
         every { invoiceService.fetch(any()) } returns processingInvoice
 
         billingService.runBilling()
@@ -96,7 +98,7 @@ class BillingServiceTest {
     }
 
     @Test
-    fun `runBilling will not charge invoice when status is PAID`() {
+    fun `Will not charge invoice when status is PAID`() {
         every { invoiceService.fetch(any()) } returns paidInvoice
 
         billingService.runBilling()
@@ -114,25 +116,35 @@ class BillingServiceTest {
     }
 
     @Test
-    fun `runBilling will change status of invoice to PROCESSING when handling`() {
+    fun `Will change status of invoice to PROCESSING when handling`() {
         billingService.runBilling()
 
         verify { invoiceService.markInvoiceProcessing(pendingInvoice.id) }
     }
 
     @Test
-    fun `runBilling will change status of invoice to PAID when charge is successful`() {
+    fun `Will change status of invoice to PAID when charge is successful`() {
         billingService.runBilling()
 
         verify { invoiceService.markInvoicePaid(pendingInvoice.id) }
     }
 
     @Test
-    fun `runBilling will not change status of invoice to PAID when charge failed`() {
+    fun `Will not change status of invoice to PAID when charge failed`() {
         every { paymentProvider.charge(any()) } returns false
 
         billingService.runBilling()
 
         verify(exactly = 0) { invoiceService.markInvoicePaid(pendingInvoice.id) }
+    }
+
+    @Test
+    fun `Will mark invoice as PENDING and schedule re-attempt date if network exception is thrown`() {
+        every { paymentProvider.charge(any()) } throws NetworkException()
+
+        billingService.runBilling()
+
+        verify { invoiceService.rescheduleAndMarkPending(pendingInvoice.id) }
+
     }
 }
