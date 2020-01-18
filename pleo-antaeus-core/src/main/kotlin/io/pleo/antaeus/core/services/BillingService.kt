@@ -11,6 +11,7 @@ import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import mu.KotlinLogging
 import org.joda.time.DateTime
+import java.time.LocalDateTime
 
 private val logger = KotlinLogging.logger {}
 
@@ -24,7 +25,7 @@ class BillingService(
         val pendingInvoices = invoiceService
             .fetchAllWithStatus(InvoiceStatus.PENDING)
             ?.filter {
-                it.scheduleDate.toLocalDate() <= DateTime.now().toLocalDate()
+                it.scheduleDate <= LocalDateTime.now()
             }
 
         pendingInvoices?.forEach { invoice ->

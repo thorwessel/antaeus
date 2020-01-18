@@ -13,8 +13,8 @@ object InvoiceTable : Table() {
     val value = decimal("value", 1000, 2)
     val customerId = reference("customer_id", CustomerTable.id)
     val status = text("status")
-    val dueDate = date("due_date")
-    val scheduleDate = date("schedule_date")
+    val dueDate = text("due_date")
+    val scheduleDate = text("schedule_date")
 }
 
 object CustomerTable : Table() {

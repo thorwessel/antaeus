@@ -6,8 +6,9 @@ import io.pleo.antaeus.models.Invoice
 import io.pleo.antaeus.models.InvoiceStatus
 import io.pleo.antaeus.models.Money
 import org.joda.time.DateTime
-import org.joda.time.LocalDateTime
 import java.math.BigDecimal
+import java.time.Instant
+import java.time.LocalDateTime
 import kotlin.random.Random
 
 // This will create all schemas and setup initial data
@@ -27,7 +28,7 @@ internal fun setupInitialData(dal: AntaeusDal) {
                 ),
                 customer = customer,
                 status = if (it == 1) InvoiceStatus.PENDING else InvoiceStatus.PAID,
-                dueDate = DateTime().plusMonths(1).withDayOfMonth(1)
+                dueDate = LocalDateTime.now().minusDays(1)
             )
         }
     }

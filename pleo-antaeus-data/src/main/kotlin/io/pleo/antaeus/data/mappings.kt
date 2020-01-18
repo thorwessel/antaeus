@@ -11,6 +11,7 @@ import io.pleo.antaeus.models.Invoice
 import io.pleo.antaeus.models.InvoiceStatus
 import io.pleo.antaeus.models.Money
 import org.jetbrains.exposed.sql.ResultRow
+import java.time.LocalDateTime
 
 fun ResultRow.toInvoice(): Invoice = Invoice(
     id = this[InvoiceTable.id],
@@ -20,8 +21,8 @@ fun ResultRow.toInvoice(): Invoice = Invoice(
     ),
     status = InvoiceStatus.valueOf(this[InvoiceTable.status]),
     customerId = this[InvoiceTable.customerId],
-    dueDate = this[InvoiceTable.dueDate],
-    scheduleDate = this[InvoiceTable.scheduleDate]
+    dueDate = LocalDateTime.parse(this[InvoiceTable.dueDate]),
+    scheduleDate = LocalDateTime.parse(this[InvoiceTable.scheduleDate])
 
 )
 
