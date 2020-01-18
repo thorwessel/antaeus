@@ -9,6 +9,7 @@ import io.pleo.antaeus.core.exceptions.InvoiceNotFoundException
 import io.pleo.antaeus.core.exceptions.NetworkException
 import io.pleo.antaeus.core.external.PaymentProvider
 import io.pleo.antaeus.models.Currency
+import io.pleo.antaeus.models.Customer
 import io.pleo.antaeus.models.Invoice
 import io.pleo.antaeus.models.InvoiceStatus
 import io.pleo.antaeus.models.Money
@@ -54,6 +55,16 @@ class BillingServiceTest {
         scheduleDate = DateTime.now()
     )
 
+    private val customer = Customer(
+        id = 1,
+        currency = Currency.EUR
+    )
+
+    private val wrongCurrencyCustomer = Customer(
+        id = 1,
+        currency = Currency.DKK
+    )
+
     private val paymentProvider = mockk<PaymentProvider>() {
         every { charge(any()) } returns true
     }
@@ -65,10 +76,14 @@ class BillingServiceTest {
         every { markInvoicePaid(processingInvoice.id) } returns paidInvoice
     }
 
+    private val customerService = mockk<CustomerService>() {
+        every { fetch(any()) } returns customer
+    }
 
     private val billingService = BillingService(
-        paymentProvider,
-        invoiceService
+        paymentProvider = paymentProvider,
+        invoiceService = invoiceService,
+        customerService = customerService
     )
 
 
@@ -157,5 +172,14 @@ class BillingServiceTest {
         billingService.runBilling()
 
         verify(exactly = 0) { invoiceService.markInvoicePaid(pendingInvoice.id) }
+    }
+
+    @Test
+    fun `Will set invoice status to FAILED when currency mismatch exception is thrown`() {
+        every { customerService.fetch(any()) } returns wrongCurrencyCustomer
+
+        billingService.runBilling()
+
+        verify(exactly = 0) { invoiceService.markInvoiceFailed(pendingInvoice.id) }
     }
 }
