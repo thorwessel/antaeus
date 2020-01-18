@@ -7,14 +7,16 @@ My implementation for this challenge will focus on:
 Before starting to implement any code, I would like to note down my initial assumptions.
 - As required by the challenge, invoices have to be paid on the 1st of the month. As the company developing this service is poised to scale, Scalability is key here to make sure all invoices, despite the volume is processed and paid on the 1st of the month.
 - The requirement as of writing the challenge is not very concrete, I will therefore assume the requirements is likely to change and be specified later on. With this in mind, the implementation needs to be loosely coupled and allow for adding functionality.
-
+- Payments failing without an exception will require manual intervention. I assume if the payment service returns false, the issue lies out of scope for the billing service and will require the customer to update bank/card details. If on the other hand an exception is thrown, the system should re-attempt the payment at a later point in time.
 
 ### Time report
 17-01-2020
     18:00-18:20 Familiarizing myself with the project.
     18:20-18:30 Deciding on the direction and architecture I want to implement
     20:20-20:40 Same
-    20:40- 
+    20:40-22:10 Implement initial BillingService
+18-01-2020
+    10:20- Continue working on BillingService
      
 
 ## Antaeus
