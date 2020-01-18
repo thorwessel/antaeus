@@ -11,6 +11,7 @@ import getPaymentProvider
 import io.pleo.antaeus.core.services.BillingService
 import io.pleo.antaeus.core.services.CustomerService
 import io.pleo.antaeus.core.services.InvoiceService
+import io.pleo.antaeus.core.services.Scheduler
 import io.pleo.antaeus.data.AntaeusDal
 import io.pleo.antaeus.data.CustomerTable
 import io.pleo.antaeus.data.InvoiceTable
@@ -67,5 +68,8 @@ fun main() {
         invoiceService = invoiceService,
         customerService = customerService
     ).run()
+
+    val scheduler = Scheduler(billingService = billingService)
+    scheduler.run()
 }
 
