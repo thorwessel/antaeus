@@ -2,7 +2,6 @@ package io.pleo.antaeus.core.services
 
 import io.mockk.every
 import io.mockk.mockk
-import io.mockk.runs
 import io.mockk.verify
 import io.mockk.verifyOrder
 import io.pleo.antaeus.core.exceptions.InvoiceNotFoundException
@@ -82,7 +81,7 @@ class BillingServiceTest {
     }
 
     private val invoiceService = mockk<InvoiceService>() {
-        every { fetchAllPending() } returns listOf(pendingInvoice)
+        every { fetchAllWithStatus(InvoiceStatus.PENDING) } returns listOf(pendingInvoice)
         every { fetch(pendingInvoice.id) } returns pendingInvoice
         every { markInvoiceProcessing(pendingInvoice.id) } returns processingInvoice
         every { markInvoicePaid(processingInvoice.id) } returns paidInvoice

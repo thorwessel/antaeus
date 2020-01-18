@@ -4,6 +4,7 @@ import io.pleo.antaeus.core.exceptions.CurrencyMismatchException
 import io.pleo.antaeus.core.exceptions.InvoiceNotFoundException
 import io.pleo.antaeus.core.exceptions.NetworkException
 import io.pleo.antaeus.core.external.PaymentProvider
+import io.pleo.antaeus.models.Customer
 import io.pleo.antaeus.models.Invoice
 import io.pleo.antaeus.models.InvoiceStatus
 import mu.KotlinLogging
@@ -17,11 +18,7 @@ class BillingService(
 ) {
     fun runBilling() {
         logger.info { "Starting processing invoices" }
-        val pendingInvoices = invoiceService.fetchAllPending()
-
-        if (pendingInvoices == null ) {
-            logger.info { "No pending invoices found" }
-        }
+        val pendingInvoices = invoiceService.fetchAllWithStatus(InvoiceStatus.PENDING)
 
         pendingInvoices?.forEach {
             processInvoice(it)
@@ -36,19 +33,9 @@ class BillingService(
             val invoiceInfo = invoiceService.fetch(invoice.id)
 
             if (invoiceInfo.status == InvoiceStatus.PENDING) {
-                invoiceService.markInvoiceProcessing(invoiceInfo.id)
-
-                if (invoiceInfo.amount.currency != customer.currency) throw CurrencyMismatchException(customer.id, invoiceInfo.id)
-
-                val chargeSuccessful = paymentProvider.charge(invoiceInfo)
-
-                if (chargeSuccessful) {
-                    logger.info { "Payment for invoice id: '${invoiceInfo.id}' was successful" }
-                    invoiceService.markInvoicePaid(invoiceInfo.id)
-                } else {
-                    logger.warn { "Payment for invoice id: '${invoiceInfo.id}' failed, manuel intervention required" }
-                }
+                attemptPayment(invoiceInfo, customer)
             }
+
         } catch (ex: InvoiceNotFoundException) {
             logger.error { "Invoice id: ${invoice.id} not found, manuel intervention needed" }
         } catch (ex: NetworkException) {
@@ -57,6 +44,25 @@ class BillingService(
         } catch (ex: CurrencyMismatchException) {
             logger.error { "Invoice id: ${invoice.id} does not match customer, will mark invoice as failed" }
             invoiceService.markInvoiceFailed(invoice.id)
+        }
+    }
+
+    private fun attemptPayment(invoice: Invoice, customer: Customer) {
+        invoiceService.markInvoiceProcessing(invoice.id)
+
+        if (invoice.amount.currency != customer.currency) {
+            throw CurrencyMismatchException(customer.id, invoice.id)
+        }
+
+        checkCharge(paymentProvider.charge(invoice), invoice)
+    }
+
+    private fun checkCharge(chargeSuccessful: Boolean, invoice: Invoice) {
+        if (chargeSuccessful) {
+            logger.info { "Payment for invoice id: '${invoice.id}' was successful" }
+            invoiceService.markInvoicePaid(invoice.id)
+        } else {
+            logger.warn { "Payment for invoice id: '${invoice.id}' failed, manuel intervention required" }
         }
     }
 }
