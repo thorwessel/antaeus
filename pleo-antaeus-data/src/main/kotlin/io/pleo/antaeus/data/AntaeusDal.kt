@@ -18,6 +18,7 @@ import org.jetbrains.exposed.sql.select
 import org.jetbrains.exposed.sql.selectAll
 import org.jetbrains.exposed.sql.transactions.transaction
 import org.jetbrains.exposed.sql.update
+import org.joda.time.DateTime
 
 class AntaeusDal(private val db: Database) {
     fun fetchInvoice(id: Int): Invoice? {
@@ -48,7 +49,7 @@ class AntaeusDal(private val db: Database) {
         }
     }
 
-    fun createInvoice(amount: Money, customer: Customer, status: InvoiceStatus = InvoiceStatus.PENDING): Invoice? {
+    fun createInvoice(amount: Money, customer: Customer, status: InvoiceStatus = InvoiceStatus.PENDING, dueDate: DateTime): Invoice? {
         val id = transaction(db) {
             // Insert the invoice and returns its new id.
             InvoiceTable
@@ -57,6 +58,8 @@ class AntaeusDal(private val db: Database) {
                     it[this.currency] = amount.currency.toString()
                     it[this.status] = status.toString()
                     it[this.customerId] = customer.id
+                    it[this.dueDate] = dueDate
+                    it[this.scheduleDate] = dueDate
                 } get InvoiceTable.id
         }
 
@@ -78,6 +81,17 @@ class AntaeusDal(private val db: Database) {
             InvoiceTable
                 .update({ InvoiceTable.id.eq(invoiceId) }) {
                     it[this.status] = InvoiceStatus.PAID.toString()
+                }
+        }
+        return fetchInvoice(invoiceId)
+    }
+
+    fun rescheduleAndMarkPending(invoiceId: Int): Invoice? {
+        transaction(db) {
+            InvoiceTable
+                .update({ InvoiceTable.id.eq(invoiceId) }) {
+                    it[this.status] = InvoiceStatus.PENDING.toString()
+                    it[this.scheduleDate] = DateTime.now().plusDays(1)
                 }
         }
         return fetchInvoice(invoiceId)
