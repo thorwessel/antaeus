@@ -27,6 +27,6 @@ class InvoiceService(private val dal: AntaeusDal) {
     }
 
     fun markInvoicePaid(id: Int): Invoice {
-        return dal.markInvoiceProcessing(id) ?: throw InvoiceNotFoundException(id)
+        return dal.markInvoicePaid(id) ?: throw InvoiceNotFoundException(id)
     }
 }
