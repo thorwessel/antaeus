@@ -1,5 +1,6 @@
 package io.pleo.antaeus.core.services
 
+import io.pleo.antaeus.core.exceptions.CurrencyMismatchException
 import io.pleo.antaeus.core.exceptions.InvoiceNotFoundException
 import io.pleo.antaeus.core.exceptions.NetworkException
 import io.pleo.antaeus.core.external.PaymentProvider
@@ -11,7 +12,8 @@ private val logger = KotlinLogging.logger {}
 
 class BillingService(
     private val paymentProvider: PaymentProvider,
-    private val invoiceService: InvoiceService
+    private val invoiceService: InvoiceService,
+    private val customerService: CustomerService
 ) {
     fun runBilling() {
         logger.info { "Starting processing invoices" }
@@ -30,10 +32,14 @@ class BillingService(
         logger.info { "Processing invoice id: ${invoice.id}" }
 
         try {
+            val customer = customerService.fetch(invoice.customerId)
             val invoiceInfo = invoiceService.fetch(invoice.id)
 
             if (invoiceInfo.status == InvoiceStatus.PENDING) {
                 invoiceService.markInvoiceProcessing(invoiceInfo.id)
+
+                if (invoiceInfo.amount.currency != customer.currency) throw CurrencyMismatchException(customer.id, invoiceInfo.id)
+
                 val chargeSuccessful = paymentProvider.charge(invoiceInfo)
 
                 if (chargeSuccessful) {
@@ -44,10 +50,13 @@ class BillingService(
                 }
             }
         } catch (ex: InvoiceNotFoundException) {
-            logger.info { "Invoice id: ${invoice.id} not found, manuel intervention needed" }
+            logger.error { "Invoice id: ${invoice.id} not found, manuel intervention needed" }
         } catch (ex: NetworkException) {
             logger.warn { "Payment for invoice id: '${invoice.id}' failed with a network error, schedule to attempt later" }
             invoiceService.rescheduleAndMarkPending(invoice.id)
+        } catch (ex: CurrencyMismatchException) {
+            logger.error { "Invoice id: ${invoice.id} does not match customer, will mark invoice as failed" }
+            invoiceService.markInvoiceFailed(invoice.id)
         }
     }
 }

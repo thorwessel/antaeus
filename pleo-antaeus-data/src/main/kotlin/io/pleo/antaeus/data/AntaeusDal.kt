@@ -86,6 +86,16 @@ class AntaeusDal(private val db: Database) {
         return fetchInvoice(invoiceId)
     }
 
+    fun markInvoiceFailed(invoiceId: Int): Invoice? {
+        transaction(db) {
+            InvoiceTable
+                .update({ InvoiceTable.id.eq(invoiceId) }) {
+                    it[this.status] = InvoiceStatus.FAILED.toString()
+                }
+        }
+        return fetchInvoice(invoiceId)
+    }
+
     fun rescheduleAndMarkPending(invoiceId: Int): Invoice? {
         transaction(db) {
             InvoiceTable
