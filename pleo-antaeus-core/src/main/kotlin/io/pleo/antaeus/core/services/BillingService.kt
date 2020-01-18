@@ -25,14 +25,14 @@ class BillingService(
         logger.info { "Processing invoice id: ${invoice.id}" }
 
         try {
-            val updatedInvoice = invoiceService.fetch(invoice.id)
+            val invoiceInfo = invoiceService.fetch(invoice.id)
 
-            if (updatedInvoice.status == InvoiceStatus.PENDING) {
-                invoiceService.markInvoiceProcessing(updatedInvoice.id)
-                val charge = paymentProvider.charge(updatedInvoice)
+            if (invoiceInfo.status == InvoiceStatus.PENDING) {
+                invoiceService.markInvoiceProcessing(invoiceInfo.id)
+                val charge = paymentProvider.charge(invoiceInfo)
 
                 if (charge == true) {
-                    invoiceService.markInvoicePaid(updatedInvoice.id)
+                    invoiceService.markInvoicePaid(invoiceInfo.id)
                 }
             }
         } catch (ex: InvoiceNotFoundException) {
