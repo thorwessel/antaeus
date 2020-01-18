@@ -2,6 +2,7 @@ package io.pleo.antaeus.core.services
 
 import io.mockk.every
 import io.mockk.mockk
+import io.mockk.runs
 import io.mockk.verify
 import io.mockk.verifyOrder
 import io.pleo.antaeus.core.exceptions.InvoiceNotFoundException
@@ -141,6 +142,7 @@ class BillingServiceTest {
     @Test
     fun `Will mark invoice as PENDING and schedule re-attempt date if network exception is thrown`() {
         every { paymentProvider.charge(any()) } throws NetworkException()
+        every { invoiceService.rescheduleAndMarkPending(any()) } returns pendingInvoice
 
         billingService.runBilling()
 
