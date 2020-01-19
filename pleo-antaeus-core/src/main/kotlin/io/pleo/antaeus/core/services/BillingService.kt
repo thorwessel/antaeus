@@ -23,11 +23,7 @@ class BillingService(
         logger.info { "Starting processing invoices" }
         val pendingInvoices = getScheduledPendingInvoices()
 
-        runBlocking {
-            pendingInvoices?.forEach {invoice ->
-                launch { processInvoice(invoice) }
-            }
-        }
+        processInvoices(pendingInvoices)
     }
 
     private fun getScheduledPendingInvoices(): List<Invoice>? {
@@ -38,6 +34,14 @@ class BillingService(
             }
     }
 
+    private fun processInvoices(invoices: List<Invoice>?) {
+        runBlocking {
+            invoices?.forEach {invoice ->
+                launch { processInvoice(invoice) }
+            }
+        }
+    }
+
     private fun processInvoice(invoice: Invoice) {
         logger.info { "Processing invoice id: ${invoice.id}" }
 
@@ -46,7 +50,8 @@ class BillingService(
             val invoiceInfo = invoiceService.fetch(invoice.id)
 
             if (invoiceInfo.status == InvoiceStatus.PENDING) {
-                attemptPayment(invoiceInfo, customer)
+                val payment = attemptPayment(invoiceInfo, customer)
+                checkCharge(payment, invoice)
             }
 
         } catch (ex: InvoiceNotFoundException) {
@@ -60,14 +65,14 @@ class BillingService(
         }
     }
 
-    private fun attemptPayment(invoice: Invoice, customer: Customer) {
+    private fun attemptPayment(invoice: Invoice, customer: Customer): Boolean {
         invoiceService.markInvoiceProcessing(invoice.id)
 
         if (invoice.amount.currency != customer.currency) {
             throw CurrencyMismatchException(customer.id, invoice.id)
         }
 
-        checkCharge(paymentProvider.charge(invoice), invoice)
+        return paymentProvider.charge(invoice)
     }
 
     private fun checkCharge(chargeSuccessful: Boolean, invoice: Invoice) {
