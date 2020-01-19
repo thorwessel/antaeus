@@ -66,13 +66,6 @@ class AntaeusRest (
                                it.json(invoiceService.fetch(it.pathParam("id").toInt()))
                            }
 
-                           // URL: /rest/v1/invoices/{:id}/process-invoice
-                           get("process-invoice"){
-                               val invoice = invoiceService.fetch(it.pathParam("id").toInt())
-                               billingService.processInvoice(invoice)
-                               it.json(invoiceService.fetch(invoice.id))
-                           }
-
                            // URL: /rest/v1/invoices/{:id}/update-invoice
                            // used to manually update invoice status
                            path("update-status") {
