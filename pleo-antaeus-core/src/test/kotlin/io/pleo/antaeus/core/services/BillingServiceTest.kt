@@ -12,7 +12,6 @@ import io.pleo.antaeus.models.Customer
 import io.pleo.antaeus.models.Invoice
 import io.pleo.antaeus.models.InvoiceStatus
 import io.pleo.antaeus.models.Money
-import org.joda.time.DateTime
 import org.junit.jupiter.api.Test
 import java.math.BigDecimal
 import java.time.LocalDateTime
@@ -182,7 +181,7 @@ class BillingServiceTest {
     @Test
     fun `Will mark invoice as PENDING and schedule re-attempt date if network exception is thrown`() {
         every { paymentProvider.charge(any()) } throws NetworkException()
-        every { invoiceService.rescheduleAndMarkPending(any()) } returns pendingInvoice
+        every { invoiceService.rescheduleAndMarkPending(any(), any()) } returns pendingInvoice
 
         billingService.runBilling()
 
@@ -192,7 +191,7 @@ class BillingServiceTest {
     @Test
     fun `Will not mark invoice as PAID if network exception is thrown`() {
         every { paymentProvider.charge(any()) } throws NetworkException()
-        every { invoiceService.rescheduleAndMarkPending(any()) } returns pendingInvoice
+        every { invoiceService.rescheduleAndMarkPending(any(), any()) } returns pendingInvoice
 
         billingService.runBilling()
 
