@@ -186,7 +186,7 @@ class BillingServiceTest {
 
         billingService.runBilling()
 
-        verify { invoiceService.rescheduleAndMarkPending(pendingInvoice.id) }
+        verify { invoiceService.rescheduleAndMarkPending(pendingInvoice.id, any()) }
     }
 
     @Test
