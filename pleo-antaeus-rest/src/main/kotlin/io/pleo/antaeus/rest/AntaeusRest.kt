@@ -8,6 +8,7 @@ import io.javalin.Javalin
 import io.javalin.apibuilder.ApiBuilder.get
 import io.javalin.apibuilder.ApiBuilder.path
 import io.javalin.apibuilder.ApiBuilder.post
+import io.javalin.apibuilder.ApiBuilder.put
 import io.pleo.antaeus.core.exceptions.EntityNotFoundException
 import io.pleo.antaeus.core.services.BillingService
 import io.pleo.antaeus.core.services.CustomerService
@@ -61,14 +62,32 @@ class AntaeusRest (
                        }
 
                        // URL: /rest/v1/invoices/{:id}
-                       get(":id") {
-                          it.json(invoiceService.fetch(it.pathParam("id").toInt()))
-                       }
+                       path(":id") {
+                           get() {
+                               it.json(invoiceService.fetch(it.pathParam("id").toInt()))
+                           }
 
-                       get(":id/process-invoice") {
-                           val invoice = invoiceService.fetch(it.pathParam("id").toInt())
-                           billingService.processInvoice(invoice)
-                           it.json(invoiceService.fetch(invoice.id))
+                           // URL: /rest/v1/invoices/{:id}/process-invoice
+                           get("process-invoice"){
+                               val invoice = invoiceService.fetch(it.pathParam("id").toInt())
+                               billingService.processInvoice(invoice)
+                               it.json(invoiceService.fetch(invoice.id))
+                           }
+
+                           // URL: /rest/v1/invoices/{:id}/update-invoice
+                           // used to manually update invoice status
+                           path("update-status") {
+                               post(":invoice-status") {
+                                   val status = it.formParam("invoice-status")
+
+                                   if (status != null) {
+                                       invoiceService.updateInvoice(it.pathParam("id").toInt(), RequestMapper.mapStatus(status))
+                                       it.status(200)
+                                   } else {
+                                       it.status(400)
+                                   }
+                               }
+                           }
                        }
                    }
 

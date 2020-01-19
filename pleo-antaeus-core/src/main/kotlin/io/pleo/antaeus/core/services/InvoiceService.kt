@@ -37,4 +37,8 @@ class InvoiceService(private val dal: AntaeusDal) {
     fun rescheduleAndMarkPending(id: Int): Invoice {
         return dal.rescheduleAndMarkPending(id) ?: throw InvoiceNotFoundException(id)
     }
+
+    fun updateInvoice(id: Int, status: InvoiceStatus): Invoice {
+        return dal.updateInvoiceStatus(id, status) ?: throw InvoiceNotFoundException(id)
+    }
 }
