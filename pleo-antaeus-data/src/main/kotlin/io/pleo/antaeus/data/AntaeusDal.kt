@@ -18,7 +18,7 @@ import org.jetbrains.exposed.sql.select
 import org.jetbrains.exposed.sql.selectAll
 import org.jetbrains.exposed.sql.transactions.transaction
 import org.jetbrains.exposed.sql.update
-import java.time.LocalDateTime
+import java.sql.Timestamp
 
 class AntaeusDal(private val db: Database) {
     fun fetchInvoice(id: Int): Invoice? {
@@ -49,7 +49,7 @@ class AntaeusDal(private val db: Database) {
         }
     }
 
-    fun createInvoice(amount: Money, customer: Customer, status: InvoiceStatus = InvoiceStatus.PENDING, dueDate: LocalDateTime): Invoice? {
+    fun createInvoice(amount: Money, customer: Customer, status: InvoiceStatus = InvoiceStatus.PENDING, dueDate: Timestamp): Invoice? {
         val id = transaction(db) {
             // Insert the invoice and returns its new id.
             InvoiceTable
@@ -96,7 +96,7 @@ class AntaeusDal(private val db: Database) {
         return fetchInvoice(invoiceId)
     }
 
-    fun rescheduleAndMarkPending(invoiceId: Int, scheduleDate: LocalDateTime): Invoice? {
+    fun rescheduleAndMarkPending(invoiceId: Int, scheduleDate: Timestamp): Invoice? {
         transaction(db) {
             InvoiceTable
                 .update({ InvoiceTable.id.eq(invoiceId) }) {

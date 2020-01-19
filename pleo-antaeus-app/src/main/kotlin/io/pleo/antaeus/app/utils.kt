@@ -6,6 +6,8 @@ import io.pleo.antaeus.models.Invoice
 import io.pleo.antaeus.models.InvoiceStatus
 import io.pleo.antaeus.models.Money
 import java.math.BigDecimal
+import java.sql.Timestamp
+import java.time.Instant
 import java.time.LocalDateTime
 import kotlin.random.Random
 
@@ -26,7 +28,7 @@ internal fun setupInitialData(dal: AntaeusDal) {
                 ),
                 customer = customer,
                 status = if (it == 1) InvoiceStatus.PENDING else InvoiceStatus.PAID,
-                dueDate = LocalDateTime.now().minusDays(1)
+                dueDate = Timestamp.valueOf(LocalDateTime.now())
             )
         }
     }

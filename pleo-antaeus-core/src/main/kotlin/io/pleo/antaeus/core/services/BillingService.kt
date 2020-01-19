@@ -10,6 +10,8 @@ import io.pleo.antaeus.models.InvoiceStatus
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import mu.KotlinLogging
+import java.sql.Timestamp
+import java.time.Instant
 import java.time.LocalDateTime
 
 private val logger = KotlinLogging.logger {}
@@ -30,7 +32,7 @@ class BillingService(
         return invoiceService
             .fetchAllWithStatus(InvoiceStatus.PENDING)
             ?.filter {
-                it.scheduleDate <= LocalDateTime.now()
+                it.scheduleDate <= Timestamp.valueOf(LocalDateTime.now())
             }
     }
 
@@ -50,6 +52,7 @@ class BillingService(
             val invoiceInfo = invoiceService.fetch(invoice.id)
 
             if (invoiceInfo.status == InvoiceStatus.PENDING) {
+                invoiceService.markInvoiceProcessing(invoice.id)
                 val payment = attemptPayment(invoiceInfo, customer)
                 checkCharge(payment, invoice)
             }
@@ -66,8 +69,6 @@ class BillingService(
     }
 
     private fun attemptPayment(invoice: Invoice, customer: Customer): Boolean {
-        invoiceService.markInvoiceProcessing(invoice.id)
-
         if (invoice.amount.currency != customer.currency) {
             throw CurrencyMismatchException(customer.id, invoice.id)
         }

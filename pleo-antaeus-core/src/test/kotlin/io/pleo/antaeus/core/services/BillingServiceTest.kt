@@ -14,6 +14,7 @@ import io.pleo.antaeus.models.InvoiceStatus
 import io.pleo.antaeus.models.Money
 import org.junit.jupiter.api.Test
 import java.math.BigDecimal
+import java.sql.Timestamp
 import java.time.LocalDateTime
 
 class BillingServiceTest {
@@ -26,8 +27,8 @@ class BillingServiceTest {
             currency = Currency.EUR
         ),
         status = InvoiceStatus.PENDING,
-        dueDate = LocalDateTime.now(),
-        scheduleDate = LocalDateTime.now()
+        dueDate = Timestamp.valueOf(LocalDateTime.now()),
+        scheduleDate = Timestamp.valueOf(LocalDateTime.now())
     )
 
     private val processingInvoice = Invoice(
@@ -38,8 +39,8 @@ class BillingServiceTest {
             currency = Currency.EUR
         ),
         status = InvoiceStatus.PROCESSING,
-        dueDate = LocalDateTime.now(),
-        scheduleDate = LocalDateTime.now()
+        dueDate = Timestamp.valueOf(LocalDateTime.now()),
+        scheduleDate = Timestamp.valueOf(LocalDateTime.now())
     )
 
     private val paidInvoice = Invoice(
@@ -50,8 +51,8 @@ class BillingServiceTest {
             currency = Currency.EUR
         ),
         status = InvoiceStatus.PAID,
-        dueDate = LocalDateTime.now(),
-        scheduleDate = LocalDateTime.now()
+        dueDate = Timestamp.valueOf(LocalDateTime.now()),
+        scheduleDate = Timestamp.valueOf(LocalDateTime.now())
     )
 
     private val failedInvoice = Invoice(
@@ -62,18 +63,8 @@ class BillingServiceTest {
             currency = Currency.EUR
         ),
         status = InvoiceStatus.FAILED,
-        dueDate = LocalDateTime.now(),
-        scheduleDate = LocalDateTime.now()
-    )
-
-    private val customer = Customer(
-        id = 1,
-        currency = Currency.EUR
-    )
-
-    private val wrongCurrencyCustomer = Customer(
-        id = 1,
-        currency = Currency.DKK
+        dueDate = Timestamp.valueOf(LocalDateTime.now()),
+        scheduleDate = Timestamp.valueOf(LocalDateTime.now())
     )
 
     private val futurePendingInvoice = Invoice(
@@ -84,8 +75,18 @@ class BillingServiceTest {
             currency = Currency.EUR
         ),
         status = InvoiceStatus.PENDING,
-        dueDate = LocalDateTime.now().plusDays(5),
-        scheduleDate = LocalDateTime.now().plusDays(5)
+        dueDate = Timestamp.valueOf(LocalDateTime.now().plusDays(5)),
+        scheduleDate = Timestamp.valueOf(LocalDateTime.now().plusDays(5))
+    )
+
+    private val customer = Customer(
+        id = 1,
+        currency = Currency.EUR
+    )
+
+    private val wrongCurrencyCustomer = Customer(
+        id = 1,
+        currency = Currency.DKK
     )
 
     private val paymentProvider = mockk<PaymentProvider>() {
