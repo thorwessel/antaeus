@@ -22,11 +22,7 @@ class BillingService(
 ) {
     fun runBilling() {
         logger.info { "Starting processing invoices" }
-        val pendingInvoices = invoiceService
-            .fetchAllWithStatus(InvoiceStatus.PENDING)
-            ?.filter {
-                it.scheduleDate <= LocalDateTime.now()
-            }
+        val pendingInvoices = getScheduledPendingInvoices()
 
         runBlocking {
             pendingInvoices?.forEach {invoice ->
@@ -35,7 +31,15 @@ class BillingService(
         }
     }
 
-    fun processInvoice(invoice: Invoice) {
+    private fun getScheduledPendingInvoices(): List<Invoice>? {
+        return invoiceService
+            .fetchAllWithStatus(InvoiceStatus.PENDING)
+            ?.filter {
+                it.scheduleDate <= LocalDateTime.now()
+            }
+    }
+
+    private fun processInvoice(invoice: Invoice) {
         logger.info { "Processing invoice id: ${invoice.id}" }
 
         try {
