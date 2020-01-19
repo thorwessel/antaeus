@@ -8,6 +8,7 @@ import io.pleo.antaeus.core.exceptions.InvoiceNotFoundException
 import io.pleo.antaeus.data.AntaeusDal
 import io.pleo.antaeus.models.Invoice
 import io.pleo.antaeus.models.InvoiceStatus
+import java.time.LocalDateTime
 
 class InvoiceService(private val dal: AntaeusDal) {
     fun fetchAll(): List<Invoice> {
@@ -34,8 +35,8 @@ class InvoiceService(private val dal: AntaeusDal) {
         return dal.markInvoiceFailed(id) ?: throw InvoiceNotFoundException(id)
     }
 
-    fun rescheduleAndMarkPending(id: Int): Invoice {
-        return dal.rescheduleAndMarkPending(id) ?: throw InvoiceNotFoundException(id)
+    fun rescheduleAndMarkPending(id: Int, scheduleDate: LocalDateTime = LocalDateTime.now().plusDays(1)): Invoice {
+        return dal.rescheduleAndMarkPending(id, scheduleDate) ?: throw InvoiceNotFoundException(id)
     }
 
     fun updateInvoice(id: Int, status: InvoiceStatus): Invoice {

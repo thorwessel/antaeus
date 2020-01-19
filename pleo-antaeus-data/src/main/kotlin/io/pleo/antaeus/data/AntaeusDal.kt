@@ -96,12 +96,12 @@ class AntaeusDal(private val db: Database) {
         return fetchInvoice(invoiceId)
     }
 
-    fun rescheduleAndMarkPending(invoiceId: Int): Invoice? {
+    fun rescheduleAndMarkPending(invoiceId: Int, scheduleDate: LocalDateTime): Invoice? {
         transaction(db) {
             InvoiceTable
                 .update({ InvoiceTable.id.eq(invoiceId) }) {
                     it[this.status] = InvoiceStatus.PENDING.toString()
-                    it[this.scheduleDate] = LocalDateTime.now().plusDays(1).toString()
+                    it[this.scheduleDate] = scheduleDate.toString()
                 }
         }
         return fetchInvoice(invoiceId)
