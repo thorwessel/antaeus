@@ -9,6 +9,7 @@ import io.pleo.antaeus.models.Invoice
 import io.pleo.antaeus.models.InvoiceStatus
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
 import mu.KotlinLogging
 import java.time.LocalDateTime
 
@@ -27,9 +28,9 @@ class BillingService(
                 it.scheduleDate <= LocalDateTime.now()
             }
 
-        pendingInvoices?.forEach { invoice ->
-            GlobalScope.launch {
-                processInvoice(invoice)
+        runBlocking {
+            pendingInvoices?.forEach {invoice ->
+                launch { processInvoice(invoice) }
             }
         }
     }
