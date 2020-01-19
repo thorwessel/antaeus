@@ -34,7 +34,7 @@ class BillingService(
         }
     }
 
-    private fun processInvoice(invoice: Invoice) {
+    fun processInvoice(invoice: Invoice) {
         logger.info { "Processing invoice id: ${invoice.id}" }
 
         try {
