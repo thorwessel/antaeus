@@ -8,7 +8,6 @@ import io.javalin.Javalin
 import io.javalin.apibuilder.ApiBuilder.get
 import io.javalin.apibuilder.ApiBuilder.path
 import io.javalin.apibuilder.ApiBuilder.post
-import io.javalin.apibuilder.ApiBuilder.put
 import io.pleo.antaeus.core.exceptions.EntityNotFoundException
 import io.pleo.antaeus.core.services.BillingService
 import io.pleo.antaeus.core.services.CustomerService
@@ -77,11 +76,11 @@ class AntaeusRest (
                            // URL: /rest/v1/invoices/{:id}/update-invoice
                            // used to manually update invoice status
                            path("update-status") {
-                               post(":invoice-status") {
-                                   val status = it.formParam("invoice-status")
+                               post() {
+                                   val invoiceStatus = RequestMapper.mapStatus(it.queryParam("invoice-status"))
 
-                                   if (status != null) {
-                                       invoiceService.updateInvoice(it.pathParam("id").toInt(), RequestMapper.mapStatus(status))
+                                   if (invoiceStatus != null) {
+                                       invoiceService.updateInvoice(it.pathParam("id").toInt(), invoiceStatus)
                                        it.status(200)
                                    } else {
                                        it.status(400)
