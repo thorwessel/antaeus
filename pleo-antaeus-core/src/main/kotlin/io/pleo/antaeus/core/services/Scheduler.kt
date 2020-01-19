@@ -1,8 +1,9 @@
 package io.pleo.antaeus.core.services
 
 import mu.KotlinLogging
-import org.joda.time.DateTime
-import org.joda.time.Duration
+import java.time.Duration
+import java.time.LocalDateTime
+import java.time.LocalTime
 
 private val logger = KotlinLogging.logger {}
 
@@ -12,12 +13,12 @@ class Scheduler(
     fun run() {
         while (true) {
             billingService.runBilling()
-            val now = DateTime.now()
+            val now = LocalDateTime.now()
 
-            val millisTillTomorrow = Duration(
+            val millisTillTomorrow = Duration.between(
                 now,
-                now.plusDays(1).withTimeAtStartOfDay()
-            ).millis
+                LocalDateTime.of(now.plusDays(1).toLocalDate(), LocalTime.MIDNIGHT)
+            ).toMillis()
 
             logger.info { "Waiting $millisTillTomorrow milliseconds until starting again" }
             Thread.sleep(millisTillTomorrow)
