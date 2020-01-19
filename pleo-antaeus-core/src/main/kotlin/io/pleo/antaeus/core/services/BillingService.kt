@@ -51,7 +51,7 @@ class BillingService(
             logger.warn { "Payment for invoice id: '${invoice.id}' failed with a network error, schedule to attempt later" }
             invoiceService.rescheduleAndMarkPending(invoice.id)
         } catch (ex: CurrencyMismatchException) {
-            logger.error { "Invoice id: ${invoice.id} does not match customer, will mark invoice as failed" }
+            logger.error { "Invoice id: ${invoice.id} currency does not match customer, will mark invoice as failed" }
             invoiceService.markInvoiceFailed(invoice.id)
         }
     }
