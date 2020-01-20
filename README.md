@@ -22,6 +22,8 @@ For the service usable in a real work environment, there is still a lot of missi
 - Implement transactional methods in the BillingService. Using fx @Transactional annotation(from a library/framework that supports this) would allow for better handling of errors/exceptions, but would also require changing the BillingService class to open and the required methods to open(for the frameworks I'm aware of). In general can be done with relative ease, but unfortunately also breaks with the principles of OOP, revealing more methods than strictly needed. 
 - Currently the BillingService ask's for manual intervention is certain cases, however no real option of handling these are given the user. Providing tools to access invoice via Antaeus' REST API would make a lot of sense, as the alternative right now, would be to manipulate with the database.
 - The service right now is running on daily basis at 00:00. However this is not very flexible and is naive. The service does not offer an option to stop the processing of invoices or schedule different processing time.
+- The timestamps written to the database is odd, I struggled to figure out where I went wrong as the documentation left me to believe the .toString() method would leave a timestamp as YYYY-MM-DD HH-mm-SS, however this is not the case. If you the reader can guide me on this, I will be very grateful! 
+- The sequence the invoices are handled is not ordered, I do not find it has significance in this case. minor detail, but thought I should add it here. 
 
 ### Notes from development
 My implementation for this challenge will focus on:
@@ -65,7 +67,6 @@ Arguable this is no big deal and introducing an interface between the DAL and In
 ##### 20-01-2020
     - 17:00-18:30 Started adding a few code comments and on the README
     - 19:40- Updating README and cleaning up/refactoring
-
 
 
 
