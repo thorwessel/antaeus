@@ -9,8 +9,6 @@ import io.pleo.antaeus.data.AntaeusDal
 import io.pleo.antaeus.models.Invoice
 import io.pleo.antaeus.models.InvoiceStatus
 import java.sql.Timestamp
-import java.time.Duration
-import java.time.Instant
 import java.time.LocalDateTime
 
 class InvoiceService(private val dal: AntaeusDal) {
