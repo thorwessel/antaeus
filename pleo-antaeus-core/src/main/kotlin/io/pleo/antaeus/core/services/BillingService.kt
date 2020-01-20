@@ -11,7 +11,6 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import mu.KotlinLogging
 import java.sql.Timestamp
-import java.time.Instant
 import java.time.LocalDateTime
 
 private val logger = KotlinLogging.logger {}
