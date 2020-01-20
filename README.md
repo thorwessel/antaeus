@@ -1,7 +1,39 @@
+### Intro
+Starting off the challenge, I tried noting down my thoughts and ideas, I have left these in 'Notes from development'. This is also where I left my assumptions and reasoning for my decisions as went through the challenge.
+Overall, I found the project was challenging and forced me to focus more on architecture compared to assignments I have had with Pleo.
+
+### What went well
+In this section, I will focus on the aspect of the challenge which I found has been done well.
+- Given the OOP nature of the challenge, I believe I managed to stick with the principles of OOP! With that being said, there is still room for improvement.(See Dependencies)
+- I find the code I implemented, especially in the BillingService, is concise and readable.
+- Setting some assumptions from the beginning, gave the challenge a more clear direction, which I found made decision later on easier.
+- TDD, this is in general a love/hate relation for me, I find it makes for slower initial development, as it forces you to plan ahead before starting to implement any code. On the other hand, it also makes it so much easier to change and implement new functionality as you have the instant feedback from the tests. I found in this challenge, that starting out writing the tests for the BillingService gave a very nice workflow especially when refactoring later on.
+
+### What I like to improve
+For the service usable in a real work environment, there is still a lot of missing functionality.
+- The REST API currently is very limited. Actioning failed invoices, changing invoices, refunding invoices etc. is currently not possible. I would have liked to add more admin functionality.
+- the API does not require any permissions. Having basic permission and authentication checks would be required in some form. Implementing this, is a bit out of the scope of my challenge, but I would like implement a bearer authentication flow and not opt for API keys. Using bearer/token authentication would allow the client to "simply" include the bearer token in the Authorization header.
+- Better handling of Payment failures. When a payment failed without an exception(the paymentProvider returns false) the invoice is scheduled to be attempted the following day. This is very naive, as there will likely be many (regular and irregular) reasons for the payment provider to return false. If the payment provider would return/throw a decline/error reason, it would easier determine how to handle a failed invoice.
+- The BillingService spams coroutines to process every single invoice. This is not ideal! To remedy this, a rate limiter which throttles requests on fx requests per second would make a lot of these. This could be added to the processInvoices method to ensure no more than x calls to the payment provider is made.
+- There is not way to stop the BillingService. A simple way make the service stop, would be to have variable that could be changed changed if the service needed to terminate. The variable could then be changed via a routine in the billing service. This is far from the most elegant solution, but would allow the service to stop and not leave invoices in an inconsistent state(as pulling the plug would).
+- I would have liked to set up the processInvoice method as transactional, I will go more into detail later on.
+ 
+### Reflection
+At this point in time, the service quickly run into issues if multiple instances are running at the same time. The service does not offer a way to handle invoices marked as FAILED and does not offer a way to shutdown the billing gracefully.
+To remedy this, there is a couple of things which needs to be addressed:
+- Choice of database, the default SQLite is a great choice of database for small single instance service, but SQLite lacks functionality necessary for services like the one in this challenge.
+Changing SQLite for PostgreSQL, would add a performance penalty, but moving away from SQLite(and separating the DB from the "Antaeus" project) would allow for better handling of multiple instances accessing the database.
+With a PostgreSQL based database, we could ensure different instances of Antaeus is not accessing the same entry in the database and minimize the chance of concurrency issues with atomic transactions on the database.
+- Implement transactional methods in the BillingService. Using fx @Transactional annotation(from a library/framework that supports this) would allow for better handling of errors/exceptions, but would also require changing the BillingService class to open and the required methods to open.
+In general can be done with relative ease, but unfortunately also breaks with the principles of OOP, revealing more methods than strictly needed.
+- Currently the BillingService ask's for manual intervention is certain cases, however no real option of handling these are given the user. Providing tools to access invoice via Antaeus' REST API would make a lot of sense, as the alternative right now, would be to manipulate with the database.
+- The service right now is running on daily basis at 00:00. However this is not very flexible and is naive. The service does not offer an option to stop the processing of invoices or schedule different processing time.
+
+
 ### Notes from development
 My implementation for this challenge will focus on:
 - Allowing multiple instances running simultaneously.
-- Structure the code to allow for future development.
+- Structure the code in a concise and readable manner.
 - Using a TDD approach
 
 Below are my assumptions I initially had and made throughout implementing the service:
@@ -9,33 +41,40 @@ Below are my assumptions I initially had and made throughout implementing the se
 - The requirement as of writing the challenge is not very concrete, I will therefore assume the requirements is likely to change and be specified later on. With this in mind, the implementation needs to be loosely coupled and allow for adding functionality.
 - Payments failing without an exception will require manual intervention. I assume if the payment service returns false, the issue lies out of scope for the billing service and will require the customer to update bank/card details. If on the other hand a network exception is thrown, the system should re-attempt the payment at a later point in time.
 - However, I will assume the CurrencyMismatch exception is result of discrepancy and will require manuel intervention.
-- I will not assume any rate limits are imposed by the payment service.
-
-After implementing the base requirement, it's time to make some choices to improve the service. 
-At this point in time, the service quickly run into issues if multiple instances are running at the same time. Does not offer a way to handle invoices marked as FAILED and does not offer a way to shutdown the billing gracefully.
-To remedy this, there is a couple of things which needs to be addressed:
-- Choice of database, the default SQLite is a great choice of database for small services, but lacks functionality necessary for services like the one in this challenge.
-Changing SQLite for PostgreSQL, would add a performance penalty, but moving away from SQLite(and separating the DB from the "Antaeus" project) would allow for better handling of multiple instances accessing the database.
-With a PostgreSQL based database, we could ensure different instances of Antaeus is not accessing the same entry in the database and minimize the chance of concurrency issues with atomic transactions on the database.
-- Implement transactional methods in the BillingService. Using fx @Transactional annotation(from a library/framework that supports this) would allow for better handling of errors/exceptions, but would also require changing the BillingService class to open and the required methods to open.
-In general can be done with relative ease, but unfortunately also breaks with the principles of OOP, revealing more methods than strictly needed. I'll continue this in _side note bellow_
-- Currently the BillingService ask's for manual intervention is certain cases, however no real option of handling these are given the user. Providing tools to access invoice via Antaeus' REST API would make a lot of sense, as the alternative right now, would be to manipulate with the database.
-- The service right now is running on daily basis at 00:00. However this is not very flexible and is naive. The service does not offer an option to stop the processing of invoices or schedule different processing time.
+- I will not assume any rate limits are imposed by the payment service for the solution.
+ 
+#### Dependencies
+After implementing the core functionality required by the challenge, I wanted to map out the services dependencies tree:
+![Dependency tree](https://i.imgur.com/GBowZVg.png)
+The structure has not been changed much from the default. A small note:
+- The AntaeusDAL class is giving an interface to the DB which exposed methods for both the Invoice- and Customer service. Meaning the Invoice service has access to methods meant for the Customer service and vice versa.
+Arguable this is no big deal and introducing an interface between the DAL and Invoice-/CustomerService would only add complexity, but could make sense at a later stage in the development. For now, I will deem this okay.
 
 ### Time report
-17-01-2020
-    18:00-18:20 Familiarizing myself with the project.
-    18:20-18:30 Deciding on the direction and architecture I want to implement
-    20:20-20:40 Same
-    20:40-22:10 Implement initial BillingService
-18-01-2020
-    10:20-12:40 Continue working on BillingService
-    13:00-15:20 Started implementing schedule- and due date to invoice, adding logic for exceptions and refactoring
-    15:20-16:00 Started implementing service for running scheduling of when to process invoices
-    21:00-22:20 changed time used in the project from Joda to Java time
+##### 17-01-2020
+    - 18:00-18:20 Familiarizing myself with the project.
+    - 18:20-18:30 Deciding on the direction and architecture I want to implement
+    - 20:20-20:40 Same
+    - 20:40-22:10 Implement initial BillingService
+##### 18-01-2020
+    - 10:20-12:40 Continue working on BillingService
+    - 13:00-15:20 Started implementing schedule- and due date to invoice, adding logic for exceptions and refactoring
+    - 15:20-16:00 Started implementing service for running scheduling of when to process invoices
+    - 21:00-22:20 changed time used in the project from Joda to Java time
     
-19-01-2020
-    11:00-11:30 Updating readme with notes this far into the project
+##### 19-01-2020
+    - 11:00-11:30 Updating readme with notes this far into the project
+    - 14:00-15:00 Started implementing framework for handling invoices via Antaeus' API
+    - 15:00-15:20 Mapping out dependencies of Antaeus
+    - 18:50-19:30 Refactoring and making the implemented code more readable
+    - 19:30-20:00 Changing Schedule- and DueDate's to TimeStamp's
+    
+##### 20-01-2020
+    - 17:00-18:30 Started adding a few code comments and on the README
+    - 19:40- Updating README and cleaning up/refactoring
+
+
+
 
 ## Antaeus
 
