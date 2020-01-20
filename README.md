@@ -1,4 +1,4 @@
-### Intro
+### Introduction to the solution
 Starting off the challenge, I tried noting down my thoughts and ideas, I have left these in 'Notes from development'. This is also where I left my assumptions and reasoning for my decisions as went through the challenge.
 Overall, I found the project was challenging and forced me to focus more on architecture compared to assignments I have had with Pleo.
 
@@ -17,18 +17,11 @@ For the service usable in a real work environment, there is still a lot of missi
 - The BillingService spams coroutines to process every single invoice. This is not ideal! To remedy this, a rate limiter which throttles requests on fx requests per second would make a lot of these. This could be added to the processInvoices method to ensure no more than x calls to the payment provider is made.
 - There is not way to stop the BillingService. A simple way make the service stop, would be to have variable that could be changed changed if the service needed to terminate. The variable could then be changed via a routine in the billing service. This is far from the most elegant solution, but would allow the service to stop and not leave invoices in an inconsistent state(as pulling the plug would).
 - I would have liked to set up the processInvoice method as transactional, I will go more into detail later on.
- 
-### Reflection
-At this point in time, the service quickly run into issues if multiple instances are running at the same time. The service does not offer a way to handle invoices marked as FAILED and does not offer a way to shutdown the billing gracefully.
-To remedy this, there is a couple of things which needs to be addressed:
-- Choice of database, the default SQLite is a great choice of database for small single instance service, but SQLite lacks functionality necessary for services like the one in this challenge.
-Changing SQLite for PostgreSQL, would add a performance penalty, but moving away from SQLite(and separating the DB from the "Antaeus" project) would allow for better handling of multiple instances accessing the database.
-With a PostgreSQL based database, we could ensure different instances of Antaeus is not accessing the same entry in the database and minimize the chance of concurrency issues with atomic transactions on the database.
-- Implement transactional methods in the BillingService. Using fx @Transactional annotation(from a library/framework that supports this) would allow for better handling of errors/exceptions, but would also require changing the BillingService class to open and the required methods to open.
-In general can be done with relative ease, but unfortunately also breaks with the principles of OOP, revealing more methods than strictly needed.
+- The service is hardcoded to run at start up and at 00:00 every day, this not very flexible or desirable for a real world environment. What I see as a good alternative, would be to add an endpoint to trigger the runBilling method from fx a lambda that have the appropriate business logic.
+- Choice of database, the default SQLite is a great choice of database for small single instance service, but SQLite lacks functionality necessary for services like the one in this challenge. Changing SQLite for PostgreSQL, would add a performance penalty, but moving away from SQLite(and separating the DB from the "Antaeus" project) would allow for better handling of multiple instances accessing the database. With a PostgreSQL based database, we could ensure different instances of Antaeus is not changing the same entry in the database to minimize the chance of concurrency issues with atomic transactions on the database.
+- Implement transactional methods in the BillingService. Using fx @Transactional annotation(from a library/framework that supports this) would allow for better handling of errors/exceptions, but would also require changing the BillingService class to open and the required methods to open(for the frameworks I'm aware of). In general can be done with relative ease, but unfortunately also breaks with the principles of OOP, revealing more methods than strictly needed. 
 - Currently the BillingService ask's for manual intervention is certain cases, however no real option of handling these are given the user. Providing tools to access invoice via Antaeus' REST API would make a lot of sense, as the alternative right now, would be to manipulate with the database.
 - The service right now is running on daily basis at 00:00. However this is not very flexible and is naive. The service does not offer an option to stop the processing of invoices or schedule different processing time.
-
 
 ### Notes from development
 My implementation for this challenge will focus on:
