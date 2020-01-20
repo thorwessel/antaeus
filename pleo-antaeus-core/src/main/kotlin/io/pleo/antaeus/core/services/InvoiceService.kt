@@ -36,7 +36,7 @@ class InvoiceService(private val dal: AntaeusDal) {
         return dal.markInvoiceFailed(id) ?: throw InvoiceNotFoundException(id)
     }
 
-    fun rescheduleAndMarkPending(id: Int, scheduleDate: Timestamp = Timestamp.valueOf(LocalDateTime.now().plusDays(1))): Invoice {
+    fun rescheduleAndMarkPending(id: Int, scheduleDate: Timestamp): Invoice {
         return dal.rescheduleAndMarkPending(id, scheduleDate) ?: throw InvoiceNotFoundException(id)
     }
 

@@ -60,7 +60,7 @@ class BillingService(
             logger.error { "Invoice id: ${invoice.id} not found, manuel intervention needed" }
         } catch (ex: NetworkException) {
             logger.warn { "Payment for invoice id: '${invoice.id}' failed with a network error, schedule to attempt later" }
-            invoiceService.rescheduleAndMarkPending(invoice.id)
+            invoiceService.rescheduleAndMarkPending(invoice.id, Timestamp.valueOf(LocalDateTime.now().plusDays(1)))
         } catch (ex: CurrencyMismatchException) {
             logger.error { "Invoice id: ${invoice.id} currency does not match customer, will mark invoice as failed" }
             invoiceService.markInvoiceFailed(invoice.id)
