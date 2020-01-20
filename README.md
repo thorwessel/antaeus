@@ -45,7 +45,7 @@ The structure has not been changed much from the default. A small note:
 - The AntaeusDAL class is giving an interface to the DB which exposed methods for both the Invoice- and Customer service. Meaning the Invoice service has access to methods meant for the Customer service and vice versa.
 Arguable this is no big deal and introducing an interface between the DAL and Invoice-/CustomerService would only add complexity, but could make sense at a later stage in the development. For now, I will deem this okay.
 
-### Time report
+### Time log
 ##### 17-01-2020
     - 18:00-18:20 Familiarizing myself with the project.
     - 18:20-18:30 Deciding on the direction and architecture I want to implement
@@ -66,7 +66,7 @@ Arguable this is no big deal and introducing an interface between the DAL and In
     
 ##### 20-01-2020
     - 17:00-18:30 Started adding a few code comments and on the README
-    - 19:40- Updating README and cleaning up/refactoring
+    - 19:40-20:20 Updating README and cleaning up/refactoring
 
 
 
