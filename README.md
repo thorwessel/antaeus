@@ -65,6 +65,9 @@ Arguable this is no big deal and introducing an interface between the DAL and In
 ##### 20-01-2020
     - 17:00-18:30 Started adding a few code comments and on the README
     - 19:40-20:20 Updating README and cleaning up/refactoring
+    
+##### 21-01-2020
+    - 07:30-07:50 final read through of README and changed scheduler to no longer run on startup
 
 
 
