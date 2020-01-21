@@ -70,7 +70,7 @@ class AntaeusRest (
                            // used to manually update invoice status
                            path("update-status") {
                                post() {
-                                   val invoiceStatus = RequestMapper.mapStatus(it.queryParam("invoice-status"))
+                                   val invoiceStatus = RequestMapperHelper.mapStatus(it.queryParam("invoice-status"))
 
                                    if (invoiceStatus != null) {
                                        invoiceService.updateInvoice(it.pathParam("id").toInt(), invoiceStatus)
