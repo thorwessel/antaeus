@@ -12,7 +12,6 @@ class Scheduler(
 ) {
     fun run() {
         while (true) {
-            billingService.runBilling()
             val now = LocalDateTime.now()
 
             val millisTillTomorrow = Duration.between(
@@ -20,8 +19,10 @@ class Scheduler(
                 LocalDateTime.of(now.plusDays(1).toLocalDate(), LocalTime.MIDNIGHT)
             ).toMillis()
 
-            logger.info { "Waiting $millisTillTomorrow milliseconds until starting again" }
+            logger.info { "Waiting $millisTillTomorrow milliseconds until running billing" }
             Thread.sleep(millisTillTomorrow)
+
+            billingService.runBilling()
         }
     }
 }
